@@ -33,6 +33,7 @@ files=""
 cacert="$CODECOV_CA_BUNDLE"
 gcov_ignore=""
 gcov_include=""
+gcov_branch_collection="-pbcu"
 ft_gcov="1"
 ft_coveragepy="1"
 ft_fix="1"
@@ -68,7 +69,7 @@ Upload reports to Codecov
     -e ENV       Specify environment variables to be included with this build
                  ex. codecov -e VAR,VAR2
                  (or) set environment variable CODECOV_ENV=VAR,VAR2
-    -X feature   Toggle functionalities, accepting: 'gcov', 'coveragepy', 'nocolor', 'fix'
+    -X feature   Toggle functionalities, accepting: 'gcov', 'coveragepy', 'nocolor', 'fix', 'gcov-branches'
     -R root dir  Used when not in git/hg project to identify project root directory
     -F flag      Flag this upload to with one or more titles
                  ex. -F unittests -F docker
@@ -263,6 +264,9 @@ $OPTARG"
         elif [ "$OPTARG" = "coveragepy" ];
         then
           ft_coveragepy="0"
+        elif [ "$OPTARG" = "gcov_branch_collection" ];
+        then
+          gcov_branch_collection=""
         elif [ "$OPTARG" = "fix" ];
         then
           ft_fix="0"
@@ -663,12 +667,12 @@ else
     if [ -d "$ddp" ];
     then
       say "    ${e}->${x} Obj-C in $ddp"
-      find "$ddp" -name '*.gcda' -exec gcov -pbcu {} + || true
+      find "$ddp" -name '*.gcda' -exec gcov $gcov_branch_collection {} + || true
     fi
 
     # all other gcov
     say "    ${e}->${x} Running $gcov_exe in $proj_root"
-    bash -c "find $proj_root -type f -name '*.gcno' $gcov_include $gcov_ignore -exec $gcov_exe -pb $gcov_arg {} +" || true
+    bash -c "find $proj_root -type f -name '*.gcno' $gcov_include $gcov_ignore -exec $gcov_exe $gcov_branch_collection $gcov_arg {} +" || true
   else
     say "${e}==>${x} gcov disable"
   fi
