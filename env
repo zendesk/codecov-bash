@@ -1,16 +1,20 @@
 #!/usr/bin/env bash
 
-# Documentation at http://docs.codecov.io/docs/testing-with-docker
+# Apache License Version 2.0, January 2004
+# https://github.com/codecov/codecov-bash/blob/master/LICENSE
 
 set -e +o pipefail
 
 VERSION="tbd"
 
-add(){
-  if [ ! -z "$1" ];
+add()
+{
+  if [ -z "$1" ];
   then
-    echo -n "-e $1 "
+    return
   fi
+
+  echo -n "-e $1 "
 }
 
 add "CODECOV_ENV"
@@ -38,6 +42,14 @@ then
   add "BUILD_NUMBER"
   add "ghprbPullId"
   add "BUILD_URL"
+  
+elif [ "$CODEBUILD_CI" = "true" ];
+then
+  add "CODEBUILD_WEBHOOK_HEAD_REF"
+  add "CODEBUILD_RESOLVED_SOURCE_VERSION"
+  add "CODEBUILD_SOURCE_VERSION"
+  add "CODEBUILD_BUILD_ID"
+  add "CODEBUILD_SOURCE_REPO_URL"
 
 elif [ "$CI" = "true" ] && [ "$TRAVIS" = "true" ] && [ "$SHIPPABLE" != "true" ];
 then
@@ -136,13 +148,12 @@ then
   add "BUILDKITE_PROJECT_SLUG"
   add "BUILDKITE_COMMIT"
 
-elif [ "$CI" = "true" ] && [ "$DRONE" = "true" ];
+elif [ "$CI" = "drone" ];
 then
-  add "DRONE"
   add "CI"
   add "DRONE_BRANCH"
   add "DRONE_BUILD_NUMBER"
-  add "DRONE_BUILD_URL"
+  add "DRONE_BUILD_LINK"
   add "DRONE_PULL_REQUEST"
   add "DRONE_JOB_NUMBER"
   add "DRONE_TAG"
@@ -183,19 +194,6 @@ then
   add "CI_BUILD_NUMBER"
   add "CI_COMMIT"
 
-elif [ "$CI" = "true" ] && [ "$SNAP_CI" = "true" ];
-then
-  add "SNAP_CI"
-  add "CI"
-  add "SNAP_BRANCH"
-  add "SNAP_UPSTREAM_BRANCH"
-  add "SNAP_PIPELINE_COUNTER"
-  add "SNAP_STAGE_NAME"
-  add "SNAP_PULL_REQUEST_NUMBER"
-  add "SNAP_COMMIT"
-  add "SNAP_UPSTREAM_COMMIT"
-  add "DISPLAY"
-
 elif [ "$SHIPPABLE" = "true" ];
 then
   add "SHIPPABLE"
@@ -232,5 +230,36 @@ then
   add "CI_BUILD_ID"
   add "CI_BUILD_REPO"
   add "CI_BUILD_REF"
+
+elif [ "$GITHUB_ACTION" != '' ]
+then
+  add "GITHUB_ACTION"
+  add "GITHUB_REF"
+  add "GITHUB_REPOSITORY"
+  add "GITHUB_HEAD_REF"
+  add "GITHUB_SHA"
+  add "GITHUB_RUN_ID"
+
+elif [ "$CI" = "true" ] && [ "$BITBUCKET_BUILD_NUMBER" != "" ];
+then
+  add "CI"
+  add "BITBUCKET_BRANCH"
+  add "BITBUCKET_BUILD_NUMBER"
+  add "BITBUCKET_REPO_OWNER"
+  add "BITBUCKET_REPO_SLUG"
+  add "BITBUCKET_PR_ID"
+  add "BITBUCKET_COMMIT"
+
+elif [ "$CI" = "true" ] && [ "$BUDDY" = "true" ];
+then
+  add "CI"
+  add "BUDDY"
+  add "BUDDY_EXECUTION_BRANCH"
+  add "BUDDY_EXECUTION_REVISION"
+  add "BUDDY_EXECUTION_ID"
+  add "BUDDY_EXECUTION_URL"
+  add "BUDDY_EXECUTION_PULL_REQUEST_NO"
+  add "BUDDY_EXECUTION_TAG"
+  add "BUDDY_REPO_SLUG"
 
 fi
